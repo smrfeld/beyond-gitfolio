@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Gitfolio UI</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+      integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="./css/index.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/css/zeva.min.css"
+    />
+  </head>
+  <body class="body-light">
+    <header>
+      <b>beyond-gitfolio</b>
+      <a href="/blog" style="float: right">New Blog </a>
+      <a href="/update" style="float: right">Update</a>
+      <a href="/" style="float: right">Home</a>
+    </header>
+    <form method="post" action="build">
+      <h3>Build or Edit Portfolio</h3>
+      <input
+        type="text"
+        class="input h-weight-bold"
+        placeholder="username"
+        id="username"
+        name="username"
+        required
+      /><br />
+      <input
+        type="text"
+        class="input h-weight-bold"
+        placeholder="background"
+        name="background"
+        id="background"
+      />
+
+      <h3>Sort By :</h3>
+      <label class="label"
+        >Star
+        <input type="radio" name="sort" value="star" />
+        <span class="radio"></span>
+      </label>
+
+      <label class="label"
+        >Created
+        <input type="radio" name="sort" value="created" checked />
+        <span class="radio"></span>
+      </label>
+
+      <label class="label"
+        >Updated
+        <input type="radio" name="sort" value="updated" />
+        <span class="radio"></span>
+      </label>
+
+      <label class="label"
+        >Pushed
+        <input type="radio" name="sort" value="pushed" />
+        <span class="radio"></span>
+      </label>
+
+      <label class="label"
+        >Full Name
+        <input type="radio" name="sort" value="full_name" />
+        <span class="radio"></span>
+      </label>
+
+      <h3>Papers :</h3>
+      <button
+        class="button h-weight-bold h-border-pill -size-small"
+        type="button"
+        onclick="newPaper()"
+      >
+        <i class="fas fa-plus"></i>&nbsp; Paper
+      </button>
+      <div id="paperList" style="display: none"></div>
+
+      <div style="display: none" id="input_for_papers">
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="Text"
+          id="paper-name"
+          name="description"
+        /><br />
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="Link"
+          id="paper-link"
+          name="link"
+        /><br />
+
+        <button
+          class="button h-weight-bold h-border-pill -size-small"
+          type="button"
+          onclick="addPaper()"
+        >
+          <i class="fas"></i>Add
+        </button>
+        <button
+          class="button h-weight-bold h-border-pill -size-small"
+          type="button"
+          onclick="cancelAddPaper()"
+        >
+        <i class="fas"></i>Cancel
+      </button>
+      </div>
+
+      <h3>Order By :</h3>
+      <label class="label"
+        >Asc
+        <input type="radio" name="order" value="asc" checked />
+        <span class="radio"></span>
+      </label>
+      <label class="label"
+        >Desc
+        <input type="radio" name="order" value="desc" />
+        <span class="radio"></span>
+      </label>
+      <br /><br />
+      <label class="label"
+        >Use Dark Theme
+        <input type="checkbox" id="theme" name="theme" />
+        <span class="checkbox"></span>
+      </label>
+      <label class="label"
+        >Include Forks
+        <input type="checkbox" id="fork" name="fork" value="true" />
+        <span class="checkbox"></span>
+      </label>
+      <label class="label"
+        >Include Socials
+        <input type="checkbox" id="socials" name="socials" />
+        <span class="checkbox"></span>
+      </label>
+      <div style="display: none" id="input_for_socials">
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="twitter username"
+          id="twitter"
+          name="twitter"
+        /><br />
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="medium username"
+          id="medium"
+          name="medium"
+        /><br />
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="dribbble username"
+          id="dribbble"
+          name="dribbble"
+        /><br />
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="linkedin username"
+          id="linkedin"
+          name="linkedin"
+        />
+      </div>
+      <br /><br />
+      <button type="submit" class="button" id="build">Build</button>
+    </form>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/js/index.min.js"
+    ></script>
+    <script type="text/javascript">
+      document.querySelector("#socials").addEventListener("change", event => {
+        if (event.target.checked) {
+          document.querySelector("#input_for_socials").style.display = "block";
+        } else {
+          document.querySelector("#input_for_socials").style.display = "none";
+        }
+      });
+    </script>
+
+    <script type="text/javascript">
+      var paperNames = [];
+      var paperURLs = [];
+      var paperNumber = 0;
+      var paperIDs = [];
+
+      function newPaper() {
+        document.querySelector("#input_for_papers").style.display = "block";
+      }
+
+      function addPaper() {
+        
+        // Check input
+        var paperName = document.getElementById('paper-name').value;
+        var paperURL = document.getElementById('paper-link').value;
+        if ((!paperName) || (!paperURL)) {
+          return;
+        }
+
+        // Create new paper div
+        var paperDiv = document.createElement("div");
+        var paperID = `paper_${paperNumber}`;
+        paperDiv.setAttribute("id", paperID);
+
+        // Create new paper text
+        var paper = document.createElement('p');
+        paper.innerHTML = `<a href="${paperURL}" title="${paperURL}">${paperName}</a>.`;
+        paperDiv.appendChild(paper);
+
+        // Create remove button
+        var remove = document.createElement("div");
+        remove.setAttribute("class", "remove");
+        remove.setAttribute(
+          "onclick",
+          `removePaper(event, '${paperID}')`
+        );
+        remove.innerHTML = '<i class="fas fa-times"></i> Remove';
+        paperDiv.appendChild(remove);
+
+        // var paper = document.createTextNode(paperName);
+        // paper.setAttribute("name", paperName);
+        // paper.setAttribute("value", paperName);
+        // paper.setAttribute("id", `paper_${paperNumber}`);
+
+        // Add to the website list
+        document.querySelector("#paperList").appendChild(paperDiv);
+
+        // Show
+        document.querySelector("#paperList").style.display = "block";
+
+        // Add to list
+        paperNames.push(paperName);
+        paperURLs.push(paperURL);
+        paperIDs.push(paperID);
+
+        // Increment paper number
+        paperNumber += 1;
+
+        // Clear
+        document.getElementById('paper-name').value = "";
+        document.getElementById('paper-link').value = "";
+
+        // Hide
+        document.querySelector("#input_for_papers").style.display = "none";
+      }
+
+      function removePaper(e, paperID) {
+
+        // Remove element
+        var elem = document.getElementById(paperID);
+        elem.parentNode.removeChild(elem);
+        
+        // Remove from list
+        var idx = paperIDs.indexOf(paperID);
+        paperNames.splice(idx, 1);
+        paperURLs.splice(idx, 1);
+        paperIDs.splice(idx, 1);
+      }
+
+      function cancelAddPaper() {
+        document.querySelector("#input_for_papers").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
