@@ -1,6 +1,17 @@
 <img src="https://i.imgur.com/eA6clZr.png">
 
-# Gitfolio 
+# Beyond Gitfolio 
+
+Jekyll theme for beautiful academic website - based on the fantastic [Gitfolio](https://imfunniee.github.io/gitfolio/).
+
+The goals of this project are to extend `Gitfolio` to:
+1. Instead of repos, show different links on the homepage.
+2. Move the repos to a dedicated `code` page.
+3. Add a dedicated `papers` page to display academic papers.
+4. Update the `gitfolio ui` so that papers can be added dynamically to the page.
+5. Small stylistic changes, e.g. change the background to full page image.
+
+## Development
 
 To install locally:
 ```

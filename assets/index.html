@@ -55,7 +55,7 @@
         >
         <br />
         <a href="https://github.com/smrfeld" target="_blank"
-        >modified offworld by an e.t.</a
+          >modified offworld by an e.t.</a
         >
       </div>
     </div>
@@ -106,6 +106,18 @@
         useTransform: true
       });
 
+      /*
+      const magicProjectsSingleGrid = new MagicGrid({
+        container: "#work_section_single",
+        animate: false,
+        gutter: 30, // default gutter size
+        static: true,
+        useMin: false,
+        maxColumns: 1,
+        useTransform: true
+      });
+      */
+
       const magicForksGrid = new MagicGrid({
         container: "#forks_section",
         animate: false,
@@ -118,6 +130,7 @@
 
       $("document").ready(() => {
         magicProjectsGrid.listen();
+        // magicProjectsSingleGrid.listen();
         magicForksGrid.listen();
       });
     </script>

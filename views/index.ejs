@@ -21,7 +21,7 @@
       href="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/css/zeva.min.css"
     />
   </head>
-  <body class="body-light" onload="addPageWithName('Papers',true); addPageWithName('Code (automatically generated)',false);">
+  <body class="body-light" onload="addPageWithName('Papers',true,false,false); addPageWithName('Code',false,true,false);">
     <header>
       <b>beyond-gitfolio</b>
       <a href="/blog" style="float: right">New Blog </a>
@@ -30,7 +30,7 @@
     </header>
 
     <!-- Here it says action=build => /build will be called when submit button is pressed-->
-    <form method="post" action="build">
+    <form method="post" action="build" id="form">
       <h3>Build or Edit Portfolio</h3>
       <input
         type="text"
@@ -69,6 +69,20 @@
           id="page-name"
         /><br />
 
+        <label class="label"
+          >External link
+          <input type="checkbox" id="external-url-check" onclick="externalLink()"/>
+          <span class="checkbox"></span>
+        </label>
+
+        <input
+          type="text"
+          class="input h-weight-bold"
+          placeholder="External URL"
+          id="external-url"
+          style="display: none"
+        /><br />
+
         <button
           class="button h-weight-bold h-border-pill -size-small"
           type="button"
@@ -91,7 +105,7 @@
       <br /><br />
       <label class="label"
         >Use Dark Theme
-        <input type="checkbox" id="theme" name="theme" />
+        <input type="checkbox" id="theme" name="theme" checked />
         <span class="checkbox"></span>
       </label>
       <label class="label"
@@ -135,7 +149,13 @@
         />
       </div>
       <br /><br />
-      <button type="submit" class="button" id="build">Build</button>
+
+      <!-- Content to submit with the form -->
+      <input type="hidden" name="pages" id="pages" />
+
+      <button type="button" class="button" onclick="submitthisform()">
+        Build
+      </button>
     </form>
     <script
       type="text/javascript"
@@ -154,13 +174,8 @@
     <script type="text/javascript">
 
       // Pages
-      var pageNames = [];
-      var pageIDs = [];
-      var pageNumber = 0;
-
-      // Entries for each page
-      var entryIDs = new Map();
-      var entryNumbers = new Map();
+      var pages = [];
+      var uniqueID = 0;
 
       // New page
       function newPage() {
@@ -169,6 +184,15 @@
         } else {
           document.querySelector("#input_for_page").style.display = "none";
         }    
+      }
+
+      // External link
+      function externalLink() {
+        if (document.querySelector("#external-url-check").checked) {
+          document.querySelector("#external-url").style.display = "block";
+        } else {
+          document.querySelector("#external-url").style.display = "none";
+        }
       }
 
       // Add the page
@@ -180,26 +204,45 @@
           return;
         }
 
+        // Check if page link is external
+        var pageIsExternal = document.getElementById('external-url-check').checked;
+
         // Add
-        addPageWithName(pageName, true);
+        addPageWithName(pageName, false, false, pageIsExternal);
       }
 
       // Add page with name
-      function addPageWithName(pageName, withPlusEntry) {
+      function addPageWithName(pageName, isPaperSection, isCodeSection, pageIsExternal) {
+
+        // Check external URL
+        var pageExternalURL = document.getElementById('external-url').value;
+        if (pageIsExternal) {
+          if (pageExternalURL === "") {
+            return;
+          }
+        }
 
         // Create new paper div
         var pageDiv = document.createElement("div");
         pageDiv.setAttribute("class", "indentPage");
-        var pageID = `page_${pageNumber}`;
+        var pageID = `page_${uniqueID}`;
+        uniqueID += 1;
         pageDiv.setAttribute("id", pageID);
 
         // Create name
-        var innerHTML = `<p style='display:inline'>${pageName}</p>`;
-        // Add the content to send with the form
-        innerHTML += `<input type="hidden" name='${pageID}_name' value='${pageName}'/>`;
+        var innerHTML = ``;
+        if (pageIsExternal) {
+          innerHTML += `<p style='display:inline'><a href='${pageExternalURL}'>${pageName}</a></p>`;
+        } else {
+          innerHTML += `<p style='display:inline'>${pageName}</p>`;
+        }
+
+        // Whether to create the plus/remove button
+        var createPlusButton = !pageIsExternal && !isCodeSection;
+        var createRemoveButton = !isPaperSection && !isCodeSection;
 
         // Create plus button
-        if (withPlusEntry) {
+        if (createPlusButton) {
           var entryID = `${pageID}_new_entry`;
 
           // Create entry button
@@ -214,7 +257,7 @@
         }
 
         // Create remove button
-        if ((pageName !== "Papers") && (pageName !== "Code (automatically generated)")) {
+        if (createRemoveButton) {
           innerHTML += `&nbsp; <p 
             style='display:inline'
             class="remove"
@@ -223,10 +266,11 @@
             </p>`
         }
 
+        // Set html
         pageDiv.innerHTML = innerHTML;
 
         // Create plus entry section
-        if (withPlusEntry) {
+        if (createPlusButton) {
           var entryDiv = document.createElement("div");
           entryDiv.setAttribute("class", "indentPageEntry");
           entryDiv.setAttribute("style", "display: none");
@@ -298,16 +342,19 @@
         document.querySelector("#pageList").style.display = "block";
 
         // Add to list
-        pageNames.push(pageName);
-        pageIDs.push(pageID);
-        entryNumbers.set(pageID, 0);
-        entryIDs.set(pageID,[]);
-
-        // Increment paper number
-        pageNumber += 1;
+        var page = {};
+        page["name"] = pageName;
+        page["ID"] = pageID;
+        page["entries"] = [];
+        page["is_external"] = pageIsExternal;
+        page["external_url"] = pageExternalURL;
+        pages.push(page);
 
         // Clear
         document.getElementById('page-name').value = "";
+        document.getElementById('external-url-check').checked = false;
+        document.getElementById('external-url').value = "";
+        document.getElementById('external-url').style.display = "none";
 
         // Hide
         document.querySelector("#input_for_page").style.display = "none";
@@ -321,9 +368,14 @@
         elem.parentNode.removeChild(elem);
 
         // Remove from list
-        var idx = pageIDs.indexOf(pageID);
-        pageNames.splice(idx, 1);
-        pageIDs.splice(idx, 1);
+        var i=0;
+        while (i<pages.length) {
+          if (pages[i]["ID"] === pageID) {
+            pages.splice(i,1);
+            break;
+          }
+          i += 1;
+        }
       }
 
       function cancelAddPage() {
@@ -351,8 +403,8 @@
 
         // Create new entry div
         var entryDiv = document.createElement("div");
-        var entryNumber = entryNumbers.get(pageID);
-        var entryID = `${pageID}_${entryNumber}`;
+        var entryID = `${pageID}_${uniqueID}`;
+        uniqueID += 1;
         entryDiv.setAttribute("id", entryID);
 
         // Create new entry text
@@ -368,10 +420,6 @@
             </p>
             `;
 
-        // Add content for sending via the form
-        innerHTML += `<input type="hidden" name='${entryID}_name' value='${entryName}'/>`;
-        innerHTML += `<input type="hidden" name='${entryID}_url' value='${entryURL}'/>`;
-
         // Set content
         entryDiv.innerHTML = innerHTML;
 
@@ -380,11 +428,18 @@
         document.getElementById(`${pageID}_list`).style.display = "block";
 
         // Add to list
-        var entryNumber = entryNumbers.get(pageID);
-        entryNumbers.set(pageID, entryNumber+1);
-        var entryIDsCurr = entryIDs.get(pageID);
-        entryIDsCurr.push(entryID);
-        entryIDs.set(pageID, entryIDsCurr);
+        var entry = {};
+        entry["ID"] = entryID;
+        entry["name"] = entryName;
+        entry["url"] = entryURL;
+        var i_page=0;
+        while (i_page<pages.length) {
+          if (pages[i_page]["ID"] === pageID) {
+            pages[i_page]["entries"].push(entry);
+            break;
+          }
+          i_page += 1;
+        }
 
         // Clear
         document.getElementById(`${pageID}_entry_name`).value = "";
@@ -394,6 +449,7 @@
         document.getElementById(`${pageID}_new_entry`).style.display = "none";
       }
 
+      // Remove entry
       function removeEntry(e, pageID, entryID) {
 
         // Remove element
@@ -401,13 +457,39 @@
         elem.parentNode.removeChild(elem);
         
         // Remove from list
-        var entries = entryIDs.get(pageID);
-        var idx = entries.indexOf(entryID);
-        entries.splice(idx, 1);
+        var i_page=0;
+        var done = false;
+        while ((i_page<pages.length) && (!done)) {
+          if (pages[i_page]["ID"] === pageID) {
+            var i_entry=0;
+            while (i_entry<pages[i_page]["entries"].length) {
+              if (pages[i_page]["entries"][i_entry]["ID"] === entryID) {
+                pages[i_page]["entries"].splice(i_entry,1);
+                done = true;
+                break;
+              }
+
+              i_entry += 1;
+            }
+          }
+          i_page += 1;
+        }
       }
 
+      // Cancel entry
       function cancelEntry(pageID) {
         document.getElementById(`${pageID}_new_entry`).style.display = "none";
+      }
+
+      // Submit this form
+      function submitthisform() {
+        // Check username
+        if (document.getElementById("username").value === "") {
+          return
+        }
+
+        document.querySelector("#pages").value = JSON.stringify(pages);
+        document.querySelector("#form").submit();
       }
     </script>
   </body>

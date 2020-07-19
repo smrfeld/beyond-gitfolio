@@ -35,7 +35,7 @@ function convertToEmoji(text) {
   }
 }
 
-module.exports.updateHTML = (username, opts) => {
+module.exports.updateCode = (username, opts) => {
   const { includeFork, twitter, linkedin, medium, dribbble } = opts;
   //add data to assets/index.html
   jsdom
@@ -160,7 +160,7 @@ module.exports.updateHTML = (username, opts) => {
           );
 
           await fs.writeFile(
-            `${outDir}/index.html`,
+            `${outDir}/Code.html`,
             "<!DOCTYPE html>" + window.document.documentElement.outerHTML,
             function(error) {
               if (error) throw error;
@@ -198,8 +198,10 @@ module.exports.updateHomepage = (username, opts) => {
             // Element
             let element = document.getElementById("work_section");
 
+            var link = `${page_name}.html`;
+
             element.innerHTML += `
-            <a href="${page_name}" target="_blank">
+            <a href="${link}">
             <section>
                 <div class="section_title">${page_name}</div>
                 <div class="about_section">
@@ -275,7 +277,7 @@ module.exports.updateHomepage = (username, opts) => {
           console.log(`${outDir}/index.html`);
 
           await fs.writeFile(
-            `${outDir}/config.json`,
+            `${outDir}/config_home.json`,
             JSON.stringify(data, null, " "),
             function(err) {
               if (err) throw err;

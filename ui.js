@@ -1,6 +1,6 @@
 const fs = require("fs");
 const express = require("express");
-const { updateHomepage } = require("./populate");
+const { updateHomepage, updateCode } = require("./populate");
 const { populateCSS, populateConfig } = require("./build");
 const { updateCommand } = require("./update");
 const app = express();
@@ -260,6 +260,7 @@ function uiCommand() {
     };
 
     updateHomepage(username, opts);
+    updateCode(username, opts);
     populateCSS({
       background: background,
       theme: theme
