@@ -179,74 +179,7 @@ function uiCommand() {
     let theme = req.body.theme == "on" ? "dark" : "light";
 
     // Pages
-    var pages = {};
-    for (const pg_key of Object.keys(req.body)) {
-      if (pg_key.length >= 4) {
-        if (pg_key.substring(0,4) === "page") {
-          console.log("Found: ",pg_key);
-          var split = pg_key.split("_");
-
-          if (split.length == 3) {
-            // Name for page
-            var page_name = req.body[pg_key];
-            var page_idx = split[1];
-
-            if (!(page_idx in pages)) {
-              pages[page_idx] = {};
-            }
-
-            pages[page_idx]["name"] = page_name;
-            pages[page_idx]["entries"] = {};
-
-          } else if (split.length == 4) {
-            // Entry
-            if (split[3] == "name") {
-              console.log(pg_key);
-
-              // Entry name
-              var entry_name = req.body[pg_key];
-              var page_idx = split[1];
-              var entry_idx = split[2];
-
-              console.log(entry_name);
-              console.log(page_idx);
-              console.log(entry_idx);
-
-              if (!(page_idx in pages)) {
-                pages[page_idx] = {};
-                pages[page_idx]["entries"] = {};
-              }
-              if (!(entry_idx in pages[page_idx]["entries"])) {
-                pages[page_idx]["entries"][entry_idx] = {};
-              }
-
-              console.log(pages);
-              console.log(pages[page_idx]["entries"][entry_idx]);
-              pages[page_idx]["entries"][entry_idx]["name"] = entry_name;
-              console.log(pages);
-              console.log(pages[page_idx]["entries"][entry_idx]["name"]);
-
-            } else if (split[3] == "url") {
-              // Entry URL
-              var entry_url = req.body[pg_key];
-              var page_idx = split[1];
-              var entry_idx = split[2];
-
-              if (!(page_idx in pages)) {
-                pages[page_idx] = {};
-                pages[page_idx]["entries"] = {};
-              }
-              if (!(entry_idx in pages[page_idx]["entries"])) {
-                pages[page_idx]["entries"][entry_idx] = {};
-              }
-
-              pages[page_idx]["entries"][entry_idx]["url"] = entry_url;
-            }
-          }
-        }
-      }
-    }
-
+    var pages = JSON.parse(req.body.pages);
     console.log(pages);
 
     const opts = {

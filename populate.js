@@ -35,6 +35,10 @@ function convertToEmoji(text) {
   }
 }
 
+function onlyUnique(value, index, self) { 
+  return self.indexOf(value) === index;
+}
+
 module.exports.updateCode = (username, opts) => {
   const { includeFork, twitter, linkedin, medium, dribbble } = opts;
   //add data to assets/index.html
@@ -48,13 +52,18 @@ module.exports.updateCode = (username, opts) => {
           console.log("Building HTML/CSS...");
           const repos = await getRepos(username, opts);
 
+          // Create content
+          var section_ids = [];
           for (var i = 0; i < repos.length; i++) {
+
+            // Get section
             let element;
             if (repos[i].fork == false) {
-              element = document.getElementById("work_section");
+              element = getOrCreateSection(document, "work_section", true, "Work.");
+              section_ids.push("work_section");
             } else if (includeFork == true) {
-              document.getElementById("forks").style.display = "block";
-              element = document.getElementById("forks_section");
+              element = getOrCreateSection(document, "fork_section", true, "Forks.");
+              section_ids.push("fork_section");
             } else {
               continue;
             }
@@ -75,8 +84,8 @@ module.exports.updateCode = (username, opts) => {
                                     ? "none"
                                     : "inline-block"
                                 };"><i class="fas fa-code"></i>&nbsp; ${
-              repos[i].language
-            }</span>
+                                  repos[i].language
+                                }</span>
                                 <span><i class="fas fa-star"></i>&nbsp; ${
                                   repos[i].stargazers_count
                                 }</span>
@@ -87,6 +96,10 @@ module.exports.updateCode = (username, opts) => {
                         </section>
                         </a>`;
           }
+
+          // Create scripts
+          createScripts(document, section_ids);
+
           const user = await getUser(username);
           document.title = user.login;
           var icon = document.createElement("link");
@@ -177,6 +190,71 @@ module.exports.updateCode = (username, opts) => {
     });
 };
 
+function getOrCreateSection(document, section_id, with_name, section_name) {
+
+  element = document.getElementById(section_id);
+
+  // Create if needed
+  if (element == null) {
+    var element_display = document.getElementById("display");
+
+    // Div
+    var element_div = document.createElement("div");
+    // element_div.setAttribute("id","work");
+    element_display.insertBefore(element_div, element_display.firstChild);
+
+    // Header
+    if (with_name) {
+      var header = document.createElement("h1");
+      header.innerHTML = section_name;
+      element_div.appendChild(header);
+    }
+
+    // Create element
+    element = document.createElement("div");
+    element.setAttribute("class","projects");
+    element.setAttribute("id",section_id);
+    element_div.appendChild(element);
+
+    // Get
+    element = document.getElementById(section_id);
+  }
+
+  return element;
+}
+
+function createScripts(document, section_ids) {
+
+  section_ids = section_ids.filter( onlyUnique );
+
+  var script = document.createElement("script");
+
+  for (var idx in section_ids) {
+    var section_id = section_ids[idx];
+
+    // Add script to end
+    script.innerHTML = `const ${section_id} = new MagicGrid({
+      container: "#${section_id}",
+      animate: false,
+      gutter: 30, // default gutter size
+      static: true,
+      useMin: false,
+      maxColumns: 2,
+      useTransform: true
+    });`;
+  }
+
+  // Script commands at bottom
+  script.innerHTML += `$("document").ready(() => {`;
+  for (var idx in section_ids) {
+    var section_id = section_ids[idx];
+    script.innerHTML += `${section_id}.listen();`;
+  }
+  script.innerHTML += `});`;
+
+  document.body.appendChild(script);
+}
+
 module.exports.updateHomepage = (username, opts) => {
   const { includeFork, twitter, linkedin, medium, dribbble, pages } = opts;
   //add data to assets/index.html
@@ -190,20 +268,26 @@ module.exports.updateHomepage = (username, opts) => {
           console.log("Building Homepage...");
 
           // Iterate over pages
+          console.log(pages);
+          var section_ids = [];
+          let element = getOrCreateSection(document, "pages", true, "<br />");
+          section_ids.push("pages");
+
           for (var page_idx in pages) {
-            var page_name = pages[page_idx]["name"];
+            var page = pages[page_idx];
+            console.log("Adding page: ", page["name"]);
 
-            console.log("Adding page: ", page_name);
-
-            // Element
-            let element = document.getElementById("work_section");
-
-            var link = `${page_name}.html`;
+            var link = ``;
+            if (page["is_external"]) {
+              link = page["external_url"];
+            } else {
+              link = `${page["name"]}.html`;
+            }
 
             element.innerHTML += `
             <a href="${link}">
             <section>
-                <div class="section_title">${page_name}</div>
+                <div class="section_title">${page["name"]}</div>
                 <div class="about_section">
                 </div>
                 <div class="bottom_section">
@@ -211,6 +295,10 @@ module.exports.updateHomepage = (username, opts) => {
             </section>
             </a>`;
           }
+
+          // Create grid at bottom
+          createScripts(document, section_ids);
+
           const user = await getUser(username);
           document.title = user.login;
           var icon = document.createElement("link");
