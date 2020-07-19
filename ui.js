@@ -1,6 +1,6 @@
 const fs = require("fs");
 const express = require("express");
-const { updateHTML } = require("./populate");
+const { updateHomepage } = require("./populate");
 const { populateCSS, populateConfig } = require("./build");
 const { updateCommand } = require("./update");
 const app = express();
@@ -160,12 +160,13 @@ function uiCommand() {
   });
 
   app.post("/build", function(req, res) {
+    console.log("Entry point for building");
+    console.log(req);
+    
     let username = req.body.username;
     if (!username) {
       return res.send("username can't be empty");
     }
-    let sort = req.body.sort ? req.body.sort : "created";
-    let order = req.body.order ? req.body.order : "asc";
     let includeFork = req.body.fork == "true" ? true : false;
     let types = ["owner"];
     let twitter = req.body.twitter ? req.body.twitter : null;
@@ -176,18 +177,89 @@ function uiCommand() {
       ? req.body.background
       : "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80";
     let theme = req.body.theme == "on" ? "dark" : "light";
+
+    // Pages
+    var pages = {};
+    for (const pg_key of Object.keys(req.body)) {
+      if (pg_key.length >= 4) {
+        if (pg_key.substring(0,4) === "page") {
+          console.log("Found: ",pg_key);
+          var split = pg_key.split("_");
+
+          if (split.length == 3) {
+            // Name for page
+            var page_name = req.body[pg_key];
+            var page_idx = split[1];
+
+            if (!(page_idx in pages)) {
+              pages[page_idx] = {};
+            }
+
+            pages[page_idx]["name"] = page_name;
+            pages[page_idx]["entries"] = {};
+
+          } else if (split.length == 4) {
+            // Entry
+            if (split[3] == "name") {
+              console.log(pg_key);
+
+              // Entry name
+              var entry_name = req.body[pg_key];
+              var page_idx = split[1];
+              var entry_idx = split[2];
+
+              console.log(entry_name);
+              console.log(page_idx);
+              console.log(entry_idx);
+
+              if (!(page_idx in pages)) {
+                pages[page_idx] = {};
+                pages[page_idx]["entries"] = {};
+              }
+              if (!(entry_idx in pages[page_idx]["entries"])) {
+                pages[page_idx]["entries"][entry_idx] = {};
+              }
+
+              console.log(pages);
+              console.log(pages[page_idx]["entries"][entry_idx]);
+              pages[page_idx]["entries"][entry_idx]["name"] = entry_name;
+              console.log(pages);
+              console.log(pages[page_idx]["entries"][entry_idx]["name"]);
+
+            } else if (split[3] == "url") {
+              // Entry URL
+              var entry_url = req.body[pg_key];
+              var page_idx = split[1];
+              var entry_idx = split[2];
+
+              if (!(page_idx in pages)) {
+                pages[page_idx] = {};
+                pages[page_idx]["entries"] = {};
+              }
+              if (!(entry_idx in pages[page_idx]["entries"])) {
+                pages[page_idx]["entries"][entry_idx] = {};
+              }
+
+              pages[page_idx]["entries"][entry_idx]["url"] = entry_url;
+            }
+          }
+        }
+      }
+    }
+
+    console.log(pages);
+
     const opts = {
-      sort: sort,
-      order: order,
       includeFork: includeFork,
       types,
       twitter: twitter,
       linkedin: linkedin,
       medium: medium,
-      dribbble: dribbble
+      dribbble: dribbble,
+      pages: pages
     };
 
-    updateHTML(username, opts);
+    updateHomepage(username, opts);
     populateCSS({
       background: background,
       theme: theme

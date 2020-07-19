@@ -4,7 +4,17 @@
 
 To install locally:
 ```
-npm install ~/software_public/beyond-gitfolio --global
+npm link
+```
+in the local dircectory which gives
+```
+/usr/local/bin/beyond-gitfolio -> /usr/local/lib/node_modules/beyond-gitfolio/bin/beyond_gitfolio.js
+/usr/local/lib/node_modules/beyond-gitfolio -> /Users/oernst/software_public/beyond-gitfolio
+```
+
+Then run
+```
+beyond-gitfolio ui
 ```
 
 ### personal website + blog for every github user

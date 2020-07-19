@@ -28,6 +28,8 @@
       <a href="/update" style="float: right">Update</a>
       <a href="/" style="float: right">Home</a>
     </header>
+
+    <!-- Here it says action=build => /build will be called when submit button is pressed-->
     <form method="post" action="build">
       <h3>Build or Edit Portfolio</h3>
       <input
@@ -65,7 +67,6 @@
           class="input h-weight-bold"
           placeholder="Page name"
           id="page-name"
-          name="page-name"
         /><br />
 
         <button
@@ -194,6 +195,8 @@
 
         // Create name
         var innerHTML = `<p style='display:inline'>${pageName}</p>`;
+        // Add the content to send with the form
+        innerHTML += `<input type="hidden" name='${pageID}_name' value='${pageName}'/>`;
 
         // Create plus button
         if (withPlusEntry) {
@@ -353,7 +356,7 @@
         entryDiv.setAttribute("id", entryID);
 
         // Create new entry text
-        entryDiv.innerHTML = `<p style="display:inline">
+        var innerHTML = `<p style="display:inline">
           <a href="${entryURL}" title="${entryURL}">
             ${entryName}
             </a></p>
@@ -364,6 +367,13 @@
             <i class="fas fa-times"></i> Remove entry
             </p>
             `;
+
+        // Add content for sending via the form
+        innerHTML += `<input type="hidden" name='${entryID}_name' value='${entryName}'/>`;
+        innerHTML += `<input type="hidden" name='${entryID}_url' value='${entryURL}'/>`;
+
+        // Set content
+        entryDiv.innerHTML = innerHTML;
 
         // Add to the list and show it
         document.getElementById(`${pageID}_list`).appendChild(entryDiv);
