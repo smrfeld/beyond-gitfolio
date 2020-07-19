@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Gitfolio UI</title>
+    <title>Beyond-Gitfolio UI</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"
@@ -21,7 +21,7 @@
       href="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/css/zeva.min.css"
     />
   </head>
-  <body class="body-light">
+  <body class="body-light" onload="addPageWithName('Papers',true); addPageWithName('Code (automatically generated)',false);">
     <header>
       <b>beyond-gitfolio</b>
       <a href="/blog" style="float: right">New Blog </a>
@@ -41,95 +41,52 @@
       <input
         type="text"
         class="input h-weight-bold"
-        placeholder="background"
+        placeholder="background image"
         name="background"
         id="background"
       />
 
-      <h3>Sort By :</h3>
-      <label class="label"
-        >Star
-        <input type="radio" name="sort" value="star" />
-        <span class="radio"></span>
-      </label>
-
-      <label class="label"
-        >Created
-        <input type="radio" name="sort" value="created" checked />
-        <span class="radio"></span>
-      </label>
-
-      <label class="label"
-        >Updated
-        <input type="radio" name="sort" value="updated" />
-        <span class="radio"></span>
-      </label>
-
-      <label class="label"
-        >Pushed
-        <input type="radio" name="sort" value="pushed" />
-        <span class="radio"></span>
-      </label>
-
-      <label class="label"
-        >Full Name
-        <input type="radio" name="sort" value="full_name" />
-        <span class="radio"></span>
-      </label>
-
-      <h3>Papers :</h3>
+      <br />
+      <br />
+      <h3 style="display: inline;">Pages :</h3> &nbsp;
+      <!--New page button-->
       <button
         class="button h-weight-bold h-border-pill -size-small"
         type="button"
-        onclick="newPaper()"
+        onclick="newPage()"
       >
-        <i class="fas fa-plus"></i>&nbsp; Paper
+        <i class="fas fa-plus"></i>&nbsp; Page
       </button>
-      <div id="paperList" style="display: none"></div>
 
-      <div style="display: none" id="input_for_papers">
+      <!--Input for new page-->
+      <div style="display: none" id="input_for_page" class="indentPage">
         <input
           type="text"
           class="input h-weight-bold"
-          placeholder="Text"
-          id="paper-name"
-          name="description"
-        /><br />
-        <input
-          type="text"
-          class="input h-weight-bold"
-          placeholder="Link"
-          id="paper-link"
-          name="link"
+          placeholder="Page name"
+          id="page-name"
+          name="page-name"
         /><br />
 
         <button
           class="button h-weight-bold h-border-pill -size-small"
           type="button"
-          onclick="addPaper()"
+          onclick="addPage()"
         >
           <i class="fas"></i>Add
         </button>
         <button
           class="button h-weight-bold h-border-pill -size-small"
           type="button"
-          onclick="cancelAddPaper()"
+          onclick="cancelAddPage()"
         >
         <i class="fas"></i>Cancel
       </button>
       </div>
 
-      <h3>Order By :</h3>
-      <label class="label"
-        >Asc
-        <input type="radio" name="order" value="asc" checked />
-        <span class="radio"></span>
-      </label>
-      <label class="label"
-        >Desc
-        <input type="radio" name="order" value="desc" />
-        <span class="radio"></span>
-      </label>
+      <!--Page list-->
+      <div id="pageList" style="display: none"></div>
+
       <br /><br />
       <label class="label"
         >Use Dark Theme
@@ -194,86 +151,253 @@
     </script>
 
     <script type="text/javascript">
-      var paperNames = [];
-      var paperURLs = [];
-      var paperNumber = 0;
-      var paperIDs = [];
 
-      function newPaper() {
-        document.querySelector("#input_for_papers").style.display = "block";
+      // Pages
+      var pageNames = [];
+      var pageIDs = [];
+      var pageNumber = 0;
+
+      // Entries for each page
+      var entryIDs = new Map();
+      var entryNumbers = new Map();
+
+      // New page
+      function newPage() {
+        if (document.querySelector("#input_for_page").style.display === "none") {
+          document.querySelector("#input_for_page").style.display = "block";
+        } else {
+          document.querySelector("#input_for_page").style.display = "none";
+        }    
       }
 
-      function addPaper() {
+      // Add the page
+      function addPage() {
         
         // Check input
-        var paperName = document.getElementById('paper-name').value;
-        var paperURL = document.getElementById('paper-link').value;
-        if ((!paperName) || (!paperURL)) {
+        var pageName = document.getElementById('page-name').value;
+        if (!pageName) {
           return;
         }
 
-        // Create new paper div
-        var paperDiv = document.createElement("div");
-        var paperID = `paper_${paperNumber}`;
-        paperDiv.setAttribute("id", paperID);
-
-        // Create new paper text
-        var paper = document.createElement('p');
-        paper.innerHTML = `<a href="${paperURL}" title="${paperURL}">${paperName}</a>.`;
-        paperDiv.appendChild(paper);
-
-        // Create remove button
-        var remove = document.createElement("div");
-        remove.setAttribute("class", "remove");
-        remove.setAttribute(
-          "onclick",
-          `removePaper(event, '${paperID}')`
-        );
-        remove.innerHTML = '<i class="fas fa-times"></i> Remove';
-        paperDiv.appendChild(remove);
-
-        // var paper = document.createTextNode(paperName);
-        // paper.setAttribute("name", paperName);
-        // paper.setAttribute("value", paperName);
-        // paper.setAttribute("id", `paper_${paperNumber}`);
-
-        // Add to the website list
-        document.querySelector("#paperList").appendChild(paperDiv);
-
-        // Show
-        document.querySelector("#paperList").style.display = "block";
-
-        // Add to list
-        paperNames.push(paperName);
-        paperURLs.push(paperURL);
-        paperIDs.push(paperID);
-
-        // Increment paper number
-        paperNumber += 1;
-
-        // Clear
-        document.getElementById('paper-name').value = "";
-        document.getElementById('paper-link').value = "";
-
-        // Hide
-        document.querySelector("#input_for_papers").style.display = "none";
+        // Add
+        addPageWithName(pageName, true);
       }
 
-      function removePaper(e, paperID) {
+      // Add page with name
+      function addPageWithName(pageName, withPlusEntry) {
+
+        // Create new paper div
+        var pageDiv = document.createElement("div");
+        pageDiv.setAttribute("class", "indentPage");
+        var pageID = `page_${pageNumber}`;
+        pageDiv.setAttribute("id", pageID);
+
+        // Create name
+        var innerHTML = `<p style='display:inline'>${pageName}</p>`;
+
+        // Create plus button
+        if (withPlusEntry) {
+          var entryID = `${pageID}_new_entry`;
+
+          // Create entry button
+          innerHTML += `&nbsp;
+          <button 
+          style='display:inline'
+          class="button h-weight-bold h-border-pill -size-small"
+          type="button"
+          onclick="newEntry('${entryID}')">
+          <i class='fas fa-plus'></i>&nbsp; Entry
+          </button>`;
+        }
+
+        // Create remove button
+        if ((pageName !== "Papers") && (pageName !== "Code (automatically generated)")) {
+          innerHTML += `&nbsp; <p 
+            style='display:inline'
+            class="remove"
+            onclick="removePage(event, '${pageID}')"> 
+            <i class="fas fa-times"></i> Remove page
+            </p>`
+        }
+
+        pageDiv.innerHTML = innerHTML;
+
+        // Create plus entry section
+        if (withPlusEntry) {
+          var entryDiv = document.createElement("div");
+          entryDiv.setAttribute("class", "indentPageEntry");
+          entryDiv.setAttribute("style", "display: none");
+          entryDiv.setAttribute("id", entryID);
+          
+          // Name
+          var inputName = document.createElement("input");
+          var inputNameID = `${pageID}_entry_name`;
+          inputName.setAttribute("type","text");
+          inputName.setAttribute("class","input h-weight-bold");
+          inputName.setAttribute("placeholder","Paper description");
+          inputName.setAttribute("id",inputNameID);
+          inputName.setAttribute("name","Name");
+          entryDiv.appendChild(inputName);
+
+          // Line break
+          var lineBreak = document.createElement("br");
+          entryDiv.appendChild(lineBreak);
+
+          // URL
+          var inputLink = document.createElement("input");
+          var inputLinkID = `${pageID}_entry_url`;
+          inputLink.setAttribute("type","text");
+          inputLink.setAttribute("class","input h-weight-bold");
+          inputLink.setAttribute("placeholder","Link");
+          inputLink.setAttribute("id",inputLinkID);
+          inputLink.setAttribute("name","Link");
+          entryDiv.appendChild(inputLink);
+
+          // Line break
+          var lineBreak = document.createElement("br");
+          entryDiv.appendChild(lineBreak);
+
+          // Save
+          var saveButton = document.createElement("button");
+          saveButton.setAttribute("class","button h-weight-bold h-border-pill -size-small");
+          saveButton.setAttribute("type","button");
+          saveButton.setAttribute("onclick",`addEntry('${pageID}')`);
+          saveButton.innerHTML = '<i class="fas"></i>Add';
+          entryDiv.appendChild(saveButton);
+
+          // Cancel
+          var cancelButton = document.createElement("button");
+          cancelButton.setAttribute("class","button h-weight-bold h-border-pill -size-small");
+          cancelButton.setAttribute("type","button");
+          cancelButton.setAttribute("onclick",`cancelEntry('${pageID}')`);
+          cancelButton.innerHTML = '<i class="fas"></i>Cancel';
+          entryDiv.appendChild(cancelButton);
+
+          // Add to page divider
+          pageDiv.appendChild(entryDiv);
+        }
+
+        // Add entry list
+        var entryList = document.createElement("div");
+        entryList.setAttribute("style","display: none");
+        entryList.setAttribute("id",`${pageID}_list`);
+        entryList.setAttribute("class","indentPageEntry");
+        pageDiv.appendChild(entryList);
+
+        // Add horizontal line
+        var hline = document.createElement("hr");
+        pageDiv.appendChild(hline);
+
+        // Add to the website list
+        document.querySelector("#pageList").appendChild(pageDiv);
+
+        // Show
+        document.querySelector("#pageList").style.display = "block";
+
+        // Add to list
+        pageNames.push(pageName);
+        pageIDs.push(pageID);
+        entryNumbers.set(pageID, 0);
+        entryIDs.set(pageID,[]);
+
+        // Increment paper number
+        pageNumber += 1;
+
+        // Clear
+        document.getElementById('page-name').value = "";
+
+        // Hide
+        document.querySelector("#input_for_page").style.display = "none";
+      }
+
+      // Cancel page
+      function removePage(e, pageID) {
 
         // Remove element
-        var elem = document.getElementById(paperID);
+        var elem = document.getElementById(pageID);
+        elem.parentNode.removeChild(elem);
+
+        // Remove from list
+        var idx = pageIDs.indexOf(pageID);
+        pageNames.splice(idx, 1);
+        pageIDs.splice(idx, 1);
+      }
+
+      function cancelAddPage() {
+        document.querySelector("#input_for_page").style.display = "none";
+      }
+
+      // New entry
+      function newEntry(entryID) {
+        if (document.querySelector(`#${entryID}`).style.display === "none") {
+          document.querySelector(`#${entryID}`).style.display = "block";
+        } else {
+          document.querySelector(`#${entryID}`).style.display = "none";
+        }
+      }
+
+      // Add the entry
+      function addEntry(pageID) {
+        
+        // Check input
+        var entryName = document.getElementById(`${pageID}_entry_name`).value;
+        var entryURL = document.getElementById(`${pageID}_entry_url`).value;
+        if ((!entryName) || (!entryURL)) {
+          return;
+        }
+
+        // Create new entry div
+        var entryDiv = document.createElement("div");
+        var entryNumber = entryNumbers.get(pageID);
+        var entryID = `${pageID}_${entryNumber}`;
+        entryDiv.setAttribute("id", entryID);
+
+        // Create new entry text
+        entryDiv.innerHTML = `<p style="display:inline">
+          <a href="${entryURL}" title="${entryURL}">
+            ${entryName}
+            </a></p>
+            &nbsp; <p 
+            style='display:inline'
+            class="remove"
+            onclick="removeEntry(event, '${pageID}', '${entryID}')"> 
+            <i class="fas fa-times"></i> Remove entry
+            </p>
+            `;
+
+        // Add to the list and show it
+        document.getElementById(`${pageID}_list`).appendChild(entryDiv);
+        document.getElementById(`${pageID}_list`).style.display = "block";
+
+        // Add to list
+        var entryNumber = entryNumbers.get(pageID);
+        entryNumbers.set(pageID, entryNumber+1);
+        var entryIDsCurr = entryIDs.get(pageID);
+        entryIDsCurr.push(entryID);
+        entryIDs.set(pageID, entryIDsCurr);
+
+        // Clear
+        document.getElementById(`${pageID}_entry_name`).value = "";
+        document.getElementById(`${pageID}_entry_url`).value = "";
+
+        // Hide new entry
+        document.getElementById(`${pageID}_new_entry`).style.display = "none";
+      }
+
+      function removeEntry(e, pageID, entryID) {
+
+        // Remove element
+        var elem = document.getElementById(entryID);
         elem.parentNode.removeChild(elem);
         
         // Remove from list
-        var idx = paperIDs.indexOf(paperID);
-        paperNames.splice(idx, 1);
-        paperURLs.splice(idx, 1);
-        paperIDs.splice(idx, 1);
+        var entries = entryIDs.get(pageID);
+        var idx = entries.indexOf(entryID);
+        entries.splice(idx, 1);
       }
 
-      function cancelAddPaper() {
-        document.querySelector("#input_for_papers").style.display = "none";
+      function cancelEntry(pageID) {
+        document.getElementById(`${pageID}_new_entry`).style.display = "none";
       }
     </script>
   </body>

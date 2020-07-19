@@ -6,6 +6,16 @@
   src: url("./font/Circular.otf");
 }
 
+.indentPage {
+  width: 100%;
+  margin-left: 100px;
+}
+
+.indentPageEntry {
+  width: 100%;
+  margin-left: 150px;
+}
+
 body {
   margin: 0%;
   padding: 0%;
