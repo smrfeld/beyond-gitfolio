@@ -9,6 +9,13 @@ The goals of this project are to extend `Gitfolio` to:
 4. Update the `gitfolio ui` so that papers can be added dynamically to the page.
 5. Small stylistic changes, e.g. change the background to full page image.
 
+## Running beyond-gitfolio
+
+Note that the command line interface from `gitfolio` is not supported because the configuration options are more complex. Only the GUI is supported:
+```
+beyond-gitfolio ui
+```
+
 ## Development
 
 To install locally:
