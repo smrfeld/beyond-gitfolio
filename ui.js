@@ -2,7 +2,6 @@ const fs = require("fs");
 const express = require("express");
 const { updateHomepage, updateCode } = require("./populate");
 const { populateCSS, populateConfig } = require("./build");
-const { updateCommand } = require("./update");
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views"));
@@ -147,16 +146,6 @@ function createBlog(title, subtitle, folder, topImage, images, content) {
 function uiCommand() {
   app.get("/", function(req, res) {
     res.render("index.ejs");
-  });
-
-  app.get("/update", function(req, res) {
-    if (!fs.existsSync(`${outDir}/config.json`)) {
-      return res.send(
-        'You need to run build command before using update<br><a href="/">Go Back</a>'
-      );
-    }
-    updateCommand();
-    res.redirect("/");
   });
 
   app.post("/build", function(req, res) {
