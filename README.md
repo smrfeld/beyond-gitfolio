@@ -37,3 +37,4 @@ beyond-gitfolio ui
 
 1. Blog is not tested and probably broken.
 2. Ability to reorganize sections.
+3. Ability to choose one or two column layouts.
