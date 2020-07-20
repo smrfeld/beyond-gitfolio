@@ -1,11 +1,15 @@
+const path = require("path");
+
 const fs = require("fs");
 const emoji = require("github-emoji");
 const jsdom = require("jsdom").JSDOM,
   options = {
     resources: "usable"
   };
-const { getConfig, outDir } = require("./utils");
-const { getRepos, getUser } = require("./api");
+const { outDir } = require("./utils");
+const { getRepos } = require("./api");
+const assetDir = path.resolve("./assets/");
+const hbs = require("handlebars");
 
 function convertToEmoji(text) {
   if (text == null) return;
@@ -39,11 +43,10 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
-async function makeUserInfo(document, username, opts) {
+async function makeUserInfo(document, user, opts) {
 
   const { twitter, linkedin, medium, dribbble } = opts;
 
-  const user = await getUser(username);
   document.title = user.login;
   var icon = document.createElement("link");
   icon.setAttribute("rel", "icon");
@@ -181,11 +184,52 @@ function createScripts(document, section_ids) {
   document.body.appendChild(script);
 }
 
-module.exports.updateCode = (username, opts) => {
+/**
+ * Creates the stylesheet used by the site from a template stylesheet.
+ *
+ * Theme styles are added to the new stylesheet depending on command line
+ * arguments.
+ */
+async function populateCSS({
+  theme = "light",
+  background = "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80"
+} = {}) {
+  /* Get the theme the user requests. Defaults to 'light' */
+  theme = `${theme}.css`;
+  let template = path.resolve(assetDir, "index.css");
+  let stylesheet = path.join(outDir, "index.css");
+
+  try {
+    await fs.accessAsync(outDir, fs.constants.F_OK);
+  } catch (err) {
+    await fs.mkdirAsync(outDir);
+  }
+  /* Copy over the template CSS stylesheet */
+  await fs.copyFileAsync(template, stylesheet);
+
+  /* Get an array of every available theme */
+  let themes = await fs.readdirAsync(path.join(assetDir, "themes"));
+
+  if (!themes.includes(theme)) {
+    console.error('Error: Requested theme not found. Defaulting to "light".');
+    theme = "light";
+  }
+  /* Read in the theme stylesheet */
+  let themeSource = await fs.readFileSync(path.join(assetDir, "themes", theme));
+  themeSource = themeSource.toString("utf-8");
+  let themeTemplate = hbs.compile(themeSource);
+  let styles = themeTemplate({
+    background: `${background}`
+  });
+  /* Add the user-specified styles to the new stylesheet */
+  await fs.appendFileAsync(stylesheet, styles);
+}
+
+function populateCode(username, user, opts) {
   const { includeFork } = opts;
   //add data to assets/index.html
   jsdom
-    .fromFile(`${__dirname}/assets/index.html`, options)
+    .fromFile(assetDir+`/index.html`, options)
     .then(function(dom) {
       let window = dom.window,
         document = window.document;
@@ -243,7 +287,7 @@ module.exports.updateCode = (username, opts) => {
           createScripts(document, section_ids);
 
           // Write common left side
-          await makeUserInfo(document, username, opts);
+          await makeUserInfo(document, user, opts);
 
           // Write
           await writePage(window, "Code");
@@ -258,11 +302,11 @@ module.exports.updateCode = (username, opts) => {
     });
 };
 
-module.exports.updateHomepage = (username, opts) => {
-  const { includeFork, twitter, linkedin, medium, dribbble, pages } = opts;
+function populateHomepage(user, opts) {
+  const { pages } = opts;
   //add data to assets/index.html
   jsdom
-    .fromFile(`${__dirname}/assets/index.html`, options)
+    .fromFile(assetDir+`/index.html`, options)
     .then(function(dom) {
       let window = dom.window,
         document = window.document;
@@ -303,7 +347,7 @@ module.exports.updateHomepage = (username, opts) => {
           createScripts(document, section_ids);
 
           // Write common left side
-          await makeUserInfo(document, username, opts);
+          await makeUserInfo(document, user, opts);
 
           // Write
           await writePage(window, "index");
@@ -316,4 +360,10 @@ module.exports.updateHomepage = (username, opts) => {
     .catch(function(error) {
       console.log(error);
     });
+};
+
+module.exports = {
+  populateCSS,
+  populateCode,
+  populateHomepage
 };

@@ -4,7 +4,7 @@ const program = require("commander");
 
 process.env.OUT_DIR = process.env.OUT_DIR || process.cwd();
 
-const { uiCommand } = require("../ui");
+const { uiCommand } = require("../src/ui");
 const { version } = require("../package.json");
 
 function collect(val, memo) {

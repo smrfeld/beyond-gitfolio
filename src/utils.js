@@ -24,8 +24,17 @@ async function getFileWithDefaults(file, defaultFile) {
   return JSON.parse(data);
 }
 
-async function getConfig() {
-  return getFileWithDefaults(configPath, defaultConfigPath);
+async function writeConfig(opts, user, theme) {
+  var data = [{}];
+  Object.assign(data[0], opts);
+
+  // User data
+  data[0].username = user.login;
+  data[0].name = user.name;
+  data[0].userimg = user.avatar_url;
+  data[0].theme = theme;
+
+  await fs.writeFileAsync(configPath, JSON.stringify(data, null, " "));
 }
 
 async function getBlog() {
@@ -34,6 +43,6 @@ async function getBlog() {
 
 module.exports = {
   outDir,
-  getConfig,
-  getBlog
+  getBlog,
+  writeConfig
 };

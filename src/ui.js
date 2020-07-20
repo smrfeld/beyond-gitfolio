@@ -1,7 +1,9 @@
 const fs = require("fs");
 const express = require("express");
-const { updateHomepage, updateCode } = require("./populate");
-const { populateCSS, populateConfig } = require("./build");
+const { populateCSS, populateHomepage, populateCode } = require("./populate");
+const { writeConfig } = require("./utils");
+const { getUser } = require("./api");
+
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/views"));
@@ -148,7 +150,7 @@ function uiCommand() {
     res.render("index.ejs");
   });
 
-  app.post("/build", function(req, res) {
+  app.post("/build", async function(req, res) {
     console.log("Entry point for building");
     console.log(req);
     
@@ -181,13 +183,14 @@ function uiCommand() {
       pages: pages
     };
 
-    updateHomepage(username, opts);
-    updateCode(username, opts);
+    const user = await getUser(username);
+    populateHomepage(user, opts);
+    populateCode(username, user, opts);
     populateCSS({
       background: background,
       theme: theme
     });
-    populateConfig(opts);
+    writeConfig(opts, user, theme);
     res.redirect("/");
   });
 
