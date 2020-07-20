@@ -7,11 +7,6 @@ process.env.OUT_DIR = process.env.OUT_DIR || process.cwd();
 const { uiCommand } = require("../src/ui");
 const { version } = require("../package.json");
 
-function collect(val, memo) {
-  memo.push(val);
-  return memo;
-}
-
 program
   .command("ui")
   .description("Create and Manage blogs with ease")

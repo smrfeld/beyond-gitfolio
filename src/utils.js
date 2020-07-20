@@ -6,7 +6,6 @@ const outDir = path.resolve("./dist/" || process.env.OUT_DIR);
 const configPath = path.join(outDir, "config.json");
 const blogPath = path.join(outDir, "blog.json");
 
-const defaultConfigPath = path.resolve(`${__dirname}/default/config.json`);
 const defaultBlogPath = path.resolve(`${__dirname}/default/blog.json`);
 
 /**
@@ -24,14 +23,29 @@ async function getFileWithDefaults(file, defaultFile) {
   return JSON.parse(data);
 }
 
-async function writeConfig(opts, user, theme) {
+async function readConfigAsText() {
+  try {
+    await fs.accessAsync(configPath, fs.constants.F_OK);
+  } catch (err) {
+    return [{}];
+  }
+  const data = await fs.readFileAsync(configPath);
+  return data;
+}
+
+async function writeConfig(opts, background, user, theme) {
   var data = [{}];
   Object.assign(data[0], opts);
+
+  // Background
+  data[0].background = background;
 
   // User data
   data[0].username = user.login;
   data[0].name = user.name;
   data[0].userimg = user.avatar_url;
+  
+  // Theme
   data[0].theme = theme;
 
   await fs.writeFileAsync(configPath, JSON.stringify(data, null, " "));
@@ -44,5 +58,6 @@ async function getBlog() {
 module.exports = {
   outDir,
   getBlog,
-  writeConfig
+  writeConfig,
+  readConfigAsText
 };

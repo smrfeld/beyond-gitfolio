@@ -35,5 +35,5 @@ beyond-gitfolio ui
 
 ### To-Do
 
-1. Light mode
-2. Load config into gui.
+1. Blog is not tested and probably broken.
+2. Ability to reorganize sections.

@@ -21,7 +21,7 @@
       href="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/css/zeva.min.css"
     />
   </head>
-  <body class="body-light" onload="loadConfig(); addPageWithName('Papers',true,false,false); addPageWithName('Code',false,true,false);">
+  <body class="body-light" onload="loadDefaults();">
     <header>
       <b>beyond-gitfolio</b>
       <a href="/blog" style="float: right">New Blog </a>
@@ -172,42 +172,102 @@
 
     <script type="text/javascript">
 
-      function loadConfig() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {
+      function loadDefaults() {
+        var optsText = `<%- optsText %>`;
 
-            // Got the JSON
-            console.log(this.responseText);
+        // JSON
+        var opts = JSON.parse(optsText);
 
-            // Decode JSON
-            var opts = JSON.parse(this.responseText);
-            
-            // Keys and ids
-            var pairs = {
-              "username": "username",
-              "background": "background",
-              "theme": "theme",
-              "fork": "fork",
-              "socials": "socials",
-              "twitter": "twitter",
-              "linkedin": "linkedin",
-              "medium": "medium",
-              "dribbble": "dribbble"
-            };
+        console.log(opts);
 
-            // Go through and set the pairs
-            for (var key in pairs) {
-              var element = document.getElementById(key);
-              var val = opts[0][pairs[key]];
-              if ((element !== null) && (val !== undefined)) {
-                element.value = val;
+        // text fields
+        var pairs = {
+          "username": "username",
+          "background": "background",
+          "twitter": "twitter",
+          "linkedin": "linkedin",
+          "medium": "medium",
+          "dribbble": "dribbble"
+        };
+        for (var key in pairs) {
+          var element = document.getElementById(key);
+          var val = opts[0][pairs[key]];
+          if ((element !== null) && (val !== undefined)) {
+            element.value = val;
+          }
+        }
+
+        // Buttons
+        var val_theme = opts[0]["theme"];
+        var element_theme = document.getElementById("theme");
+        if ((element_theme !== null) && (val_theme !== undefined)) {
+          if (val_theme === "light") {
+            element_theme.checked = false;
+          } else {
+            element_theme.checked = true;
+          }
+        }
+        
+        var val_social = opts[0]["includeSocial"];
+        var element_social = document.getElementById("socials");
+        if ((element_social !== null) && (val_social !== undefined)) {
+          element_social.checked = val_social;
+          if (element_social.checked) {
+            document.querySelector("#input_for_socials").style.display = "block";
+          } else {
+            document.querySelector("#input_for_socials").style.display = "none";
+          }
+        }
+
+        var val_fork = opts[0]["includeFork"];
+        var element_fork = document.getElementById("fork");
+        if ((element_fork !== null) && (val_fork !== undefined)) {
+          element_fork.checked = val_fork;
+        }
+
+        // Next, do the pages
+
+        // First add papers
+        addPageWithNameAndURL("page_0",'Papers',true,false,false,""); 
+
+        // Add paper entries
+        for (var page_idx in opts[0]["pages"]) {
+          var page = opts[0]["pages"][page_idx];
+          if (page["name"] === "Papers") {
+            // Go through entries
+            for (var entry_idx in page["entries"]) {
+              var entry = page["entries"][entry_idx];
+              addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["URL"]);
+            }
+
+            break;
+          }
+        }
+
+        // Next add code
+        addPageWithNameAndURL("page_1",'Code',false,true,false,"");
+
+        // Do the rest of the pages
+        for (var page_idx in opts[0]["pages"]) {
+          var page = opts[0]["pages"][page_idx];
+          if ((page["name"] !== "Papers") && (page["name"] !== "Code")) {
+            addPageWithNameAndURL(page["ID"],page["name"],false,false,page["is_external"],page["external_url"]);
+
+            if (!(page["is_external"])) {
+
+              // Go through entries
+              for (var entry_idx in page["entries"]) {
+                var entry = page["entries"][entry_idx];
+                addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["URL"]);
               }
+
+              break;
             }
           }
-        };
-        xhttp.open("GET", "config.json", true);
-        xhttp.send();
+        }
+
+        // Set the page index correctly
+        uniqueID = opts[0]["pages"].length;
       }
 
       // Pages
@@ -244,13 +304,6 @@
         // Check if page link is external
         var pageIsExternal = document.getElementById('external-url-check').checked;
 
-        // Add
-        addPageWithName(pageName, false, false, pageIsExternal);
-      }
-
-      // Add page with name
-      function addPageWithName(pageName, isPaperSection, isCodeSection, pageIsExternal) {
-
         // Check external URL
         var pageExternalURL = document.getElementById('external-url').value;
         if (pageIsExternal) {
@@ -259,11 +312,18 @@
           }
         }
 
+        // Add
+        var pageID = `page_${uniqueID}`;
+        uniqueID += 1;
+        addPageWithNameAndURL(pageID, pageName, false, false, pageIsExternal, pageExternalURL);
+      }
+
+      // Add page with name
+      function addPageWithNameAndURL(pageID, pageName, isPaperSection, isCodeSection, pageIsExternal, pageExternalURL) {
+
         // Create new paper div
         var pageDiv = document.createElement("div");
         pageDiv.setAttribute("class", "indentPage");
-        var pageID = `page_${uniqueID}`;
-        uniqueID += 1;
         pageDiv.setAttribute("id", pageID);
 
         // Create name
@@ -318,7 +378,7 @@
           var inputNameID = `${pageID}_entry_name`;
           inputName.setAttribute("type","text");
           inputName.setAttribute("class","input h-weight-bold");
-          inputName.setAttribute("placeholder","Paper description");
+          inputName.setAttribute("placeholder","Title");
           inputName.setAttribute("id",inputNameID);
           inputName.setAttribute("name","Name");
           entryDiv.appendChild(inputName);
@@ -438,10 +498,15 @@
           return;
         }
 
-        // Create new entry div
-        var entryDiv = document.createElement("div");
         var entryID = `${pageID}_${uniqueID}`;
         uniqueID += 1;
+        addEntryWithNameAndURL(pageID, entryID, entryName, entryURL);
+      }
+
+      function addEntryWithNameAndURL(pageID, entryID, entryName, entryURL) {
+
+        // Create new entry div
+        var entryDiv = document.createElement("div");
         entryDiv.setAttribute("id", entryID);
 
         // Create new entry text

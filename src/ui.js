@@ -1,7 +1,7 @@
 const fs = require("fs");
 const express = require("express");
 const { populateCSS, populateHomepage, populateCode } = require("./populate");
-const { writeConfig } = require("./utils");
+const { writeConfig, readConfigAsText } = require("./utils");
 const { getUser } = require("./api");
 
 const app = express();
@@ -146,19 +146,22 @@ function createBlog(title, subtitle, folder, topImage, images, content) {
 }
 
 function uiCommand() {
-  app.get("/", function(req, res) {
-    res.render("index.ejs");
+  app.get("/", async function(req, res) {
+    console.log("Called");
+    var optsText = await readConfigAsText();
+    res.render("index.ejs", {optsText: optsText});
   });
 
   app.post("/build", async function(req, res) {
     console.log("Entry point for building");
-    console.log(req);
     
     let username = req.body.username;
     if (!username) {
       return res.send("username can't be empty");
     }
-    let includeFork = req.body.fork == "true" ? true : false;
+    let includeFork = req.body.fork == "on" ? true : false;
+    let includeSocial = req.body.socials == "on" ? true : false;
+    console.log(req.body.socials);
     let types = ["owner"];
     let twitter = req.body.twitter ? req.body.twitter : null;
     let linkedin = req.body.linkedin ? req.body.linkedin : null;
@@ -169,12 +172,14 @@ function uiCommand() {
       : "https://images.unsplash.com/photo-1553748024-d1b27fb3f960?w=1500&q=80";
     let theme = req.body.theme == "on" ? "dark" : "light";
 
+    console.log(theme);
+
     // Pages
     var pages = JSON.parse(req.body.pages);
-    console.log(pages);
 
     const opts = {
       includeFork: includeFork,
+      includeSocial: includeSocial,
       types,
       twitter: twitter,
       linkedin: linkedin,
@@ -183,14 +188,23 @@ function uiCommand() {
       pages: pages
     };
 
+    console.log("getUser...");
     const user = await getUser(username);
+    
+    console.log("populateHomepage...");
     populateHomepage(user, opts);
+    
+    console.log("populateCode...");
     populateCode(username, user, opts);
+    
+    console.log("populateCSS...");
     populateCSS({
       background: background,
       theme: theme
     });
-    writeConfig(opts, user, theme);
+    
+    console.log("writeConfig...");
+    writeConfig(opts, background, user, theme);
     res.redirect("/");
   });
 

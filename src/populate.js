@@ -8,7 +8,7 @@ const jsdom = require("jsdom").JSDOM,
   };
 const { outDir } = require("./utils");
 const { getRepos } = require("./api");
-const assetDir = path.resolve("./assets/");
+const assetDir = path.resolve(`${__dirname}/assets/`);
 const hbs = require("handlebars");
 
 function convertToEmoji(text) {
