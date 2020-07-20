@@ -254,7 +254,7 @@
             addPageWithNameAndURL(page["ID"],page["name"],false,false,page["is_external"],page["external_url"]);
             var id_str = page["ID"].substr(page["ID"].length - 1);
             var id = parseInt(id_str);
-            uniqueID = Math.max(id, uniqueID);
+            uniqueID = Math.max(id, uniqueID) + 1;
 
             if (!(page["is_external"])) {
 
