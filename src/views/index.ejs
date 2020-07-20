@@ -237,7 +237,7 @@
             // Go through entries
             for (var entry_idx in page["entries"]) {
               var entry = page["entries"][entry_idx];
-              addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["URL"]);
+              addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["url"]);
             }
 
             break;
@@ -258,7 +258,7 @@
               // Go through entries
               for (var entry_idx in page["entries"]) {
                 var entry = page["entries"][entry_idx];
-                addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["URL"]);
+                addEntryWithNameAndURL(page["ID"], entry["ID"], entry["name"], entry["url"]);
               }
 
               break;

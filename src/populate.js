@@ -150,7 +150,7 @@ function getOrCreateSection(document, section_id, section_name) {
   return element;
 }
 
-function createScripts(document, section_ids) {
+function createScripts(document, section_ids, maxColumns) {
 
   section_ids = section_ids.filter( onlyUnique );
 
@@ -166,7 +166,7 @@ function createScripts(document, section_ids) {
       gutter: 30, // default gutter size
       static: true,
       useMin: false,
-      maxColumns: 2,
+      maxColumns: ${maxColumns},
       useTransform: true
     });`;
   }
@@ -282,7 +282,7 @@ function populateCode(username, user, opts) {
           }
 
           // Create scripts
-          createScripts(document, section_ids);
+          createScripts(document, section_ids, 2);
 
           // Write common left side
           await makeUserInfo(document, user, opts);
@@ -342,7 +342,7 @@ function populateHomepage(user, opts) {
           }
 
           // Create grid at bottom
-          createScripts(document, section_ids);
+          createScripts(document, section_ids, 2);
 
           // Write common left side
           await makeUserInfo(document, user, opts);
@@ -400,10 +400,11 @@ async function populatePages(user, opts) {
           // Iterate over entries
           for (var entry_idx in page["entries"]) {
             var entry = page["entries"][entry_idx];
-            console.log("Adding to page: ", page["name"], " entry: ", entry["name"]);
+            console.log(entry);
+            console.log("Adding to page: ", page["name"], " entry: ", entry["name"], " url: ", entry["url"]);
 
             element.innerHTML += `
-            <a href="${entry["url"]}">
+            <a href="${entry["url"]}" style="width: 100% !important;">
             <section>
                 <div class="section_title">${entry["name"]}</div>
                 <div class="about_section">
@@ -415,7 +416,7 @@ async function populatePages(user, opts) {
           }
 
           // Create grid at bottom
-          createScripts(document, section_ids);
+          createScripts(document, section_ids, 1);
 
           // Write common left side
           await makeUserInfo(document, user, opts);
