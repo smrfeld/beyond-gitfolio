@@ -25,11 +25,14 @@
   </head>
 
   <body>
+    <div id="loading_black">
     <div id="loading">
       <div id="spinner"></div>
     </div>
+    </div>
+    <div id="profile_background"></div>
     <div id="profile">
-      <div id="profile_img"></div>
+      <div id="profile_img" onclick="location.href='index.html';"></div>
       <div id="username">
         <div id="fullname"></div>
       </div>
@@ -43,7 +46,7 @@
         >
         <br />
         <a href="https://github.com/smrfeld" target="_blank"
-          >modified off-world by an e.t.</a
+          >remixed off-world by an e.t.</a
         >
       </div>
     </div>
@@ -51,10 +54,15 @@
       setTimeout(function() {
         document.getElementById("loading").classList.add("animated");
         document.getElementById("loading").classList.add("fadeOut");
+        document.getElementById("loading_black").classList.add("animated");
+        document.getElementById("loading_black").classList.add("fadeOut");
         setTimeout(function() {
           document.getElementById("loading").classList.remove("animated");
           document.getElementById("loading").classList.remove("fadeOut");
           document.getElementById("loading").style.display = "none";
+          document.getElementById("loading_black").classList.remove("animated");
+          document.getElementById("loading_black").classList.remove("fadeOut");
+          document.getElementById("loading_black").style.display = "none";
         }, 800);
       }, 1500);
     </script>

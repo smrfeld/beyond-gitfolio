@@ -28,6 +28,11 @@ Then run
 beyond-gitfolio ui
 ```
 
+### To-Do
+
+1. Light mode
+2. Load config into gui.
+
 ### personal website + blog for every github user
 
 Gitfolio will help you get started with a portfolio website where you could showcase your work + a blog that will help you spread your ideas into real world.

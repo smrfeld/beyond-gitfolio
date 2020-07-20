@@ -2,19 +2,12 @@
   --bg-color: rgb(10, 10, 10);
   --text-color: #fff;
   --blog-gray-color: rgb(180, 180, 180);
-  --background-image: linear-gradient(
-      90deg,
-      rgba(10, 10, 10, 0.3),
-      rgb(10, 10, 10, 1)
-    ),
-    url("{{{background}}}");
-  --background-background: linear-gradient(
-      0deg,
-      rgba(10, 10, 10, 1),
-      rgba(10, 10, 10, 0.6)
-    ),
-    url("{{{background}}}") center center fixed;
-  --height: 50vh;
+  --background-left: linear-gradient(
+    90deg,
+    rgba(10, 10, 10, 0.1),
+    rgb(10, 10, 10, 0.8)
+  ),
+  url("{{{background}}}");
 }
 
 #display h1 {
@@ -30,7 +23,7 @@
 }
 
 .projects section {
-  background: rgb(20, 20, 20);
+  background: rgb(20, 20, 20, 0.5);
 }
 
 #blog_section section {
@@ -39,7 +32,7 @@
 
 @media (max-width: 800px) {
   :root {
-    --background-image: linear-gradient(
+    --background-left: linear-gradient(
         0deg,
         rgba(10, 10, 10, 1),
         rgba(10, 10, 10, 0)

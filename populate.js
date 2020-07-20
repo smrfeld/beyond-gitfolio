@@ -39,8 +39,150 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
+async function makeUserInfo(document, username, opts) {
+
+  const { twitter, linkedin, medium, dribbble } = opts;
+
+  const user = await getUser(username);
+  document.title = user.login;
+  var icon = document.createElement("link");
+  icon.setAttribute("rel", "icon");
+  icon.setAttribute("href", user.avatar_url);
+  icon.setAttribute("type", "image/png");
+
+  document.getElementsByTagName("head")[0].appendChild(icon);
+  document.getElementById(
+    "profile_img"
+  ).style.background = `url('${user.avatar_url}') center center`;
+  document.getElementById(
+    "username"
+  ).innerHTML = `<span style="display:${
+    user.name == null || !user.name ? "none" : "block"
+  };">${user.name}</span><a href="${user.html_url}">@${user.login}</a>`;
+  //document.getElementById("github_link").href = `https://github.com/${user.login}`;
+  document.getElementById("userbio").innerHTML = convertToEmoji(
+    user.bio
+  );
+  document.getElementById("userbio").style.display =
+    user.bio == null || !user.bio ? "none" : "block";
+  document.getElementById("about").innerHTML = `
+        <span style="display:${
+          user.company == null || !user.company ? "none" : "block"
+        };"><i class="fas fa-users"></i> &nbsp; ${user.company}</span>
+        <span style="display:${
+          user.email == null || !user.email ? "none" : "block"
+        };"><i class="fas fa-envelope"></i> &nbsp; ${user.email}</span>
+        <span style="display:${
+          user.blog == null || !user.blog ? "none" : "block"
+        };"><i class="fas fa-link"></i> &nbsp; <a href="${user.blog}">${
+    user.blog
+  }</a></span>
+        <span style="display:${
+          user.location == null || !user.location ? "none" : "block"
+        };"><i class="fas fa-map-marker-alt"></i> &nbsp;&nbsp; ${
+    user.location
+  }</span>
+        <span style="display:${
+          user.hireable == false || !user.hireable ? "none" : "block"
+        };"><i class="fas fa-user-tie"></i> &nbsp;&nbsp; Available for hire</span>
+        <div class="socials">
+        <span style="display:${
+          twitter == null ? "none !important" : "block"
+        };"><a href="https://www.twitter.com/${twitter}" target="_blank" class="socials"><i class="fab fa-twitter"></i></a></span>
+        <span style="display:${
+          dribbble == null ? "none !important" : "block"
+        };"><a href="https://www.dribbble.com/${dribbble}" target="_blank" class="socials"><i class="fab fa-dribbble"></i></a></span>
+        <span style="display:${
+          linkedin == null ? "none !important" : "block"
+        };"><a href="https://www.linkedin.com/in/${linkedin}/" target="_blank" class="socials"><i class="fab fa-linkedin-in"></i></a></span>
+        <span style="display:${
+          medium == null ? "none !important" : "block"
+        };"><a href="https://www.medium.com/@${medium}/" target="_blank" class="socials"><i class="fab fa-medium-m"></i></a></span>
+        </div>
+        `;
+}
+
+async function writePage(window, page_name) {
+  await fs.writeFile(
+    `${outDir}/${page_name}.html`,
+    "<!DOCTYPE html>" + window.document.documentElement.outerHTML,
+    function(error) {
+      if (error) throw error;
+      console.log(`Wrote page: ${outDir}/${page_name}.html\n`);
+    }
+  );
+}
+
+function getOrCreateSection(document, section_id, with_name, section_name) {
+
+  element = document.getElementById(section_id);
+
+  // Create if needed
+  if (element == null) {
+    var element_display = document.getElementById("display");
+
+    // Div
+    var element_div = document.createElement("div");
+    // element_div.setAttribute("id","work");
+
+    // Header
+    if (with_name == true) {
+      var header = document.createElement("h1");
+      header.setAttribute("style","position: relative");
+      header.innerHTML = section_name;
+      element_div.appendChild(header);
+    }
+
+    // Create element
+    element = document.createElement("div");
+    element.setAttribute("class","projects");
+    element.setAttribute("id",section_id);
+    element_div.appendChild(element);
+
+    // Add div
+    element_display.insertBefore(element_div, element_display.firstElementChild);
+
+    // Get
+    element = document.getElementById(section_id);
+  }
+
+  return element;
+}
+
+function createScripts(document, section_ids) {
+
+  section_ids = section_ids.filter( onlyUnique );
+
+  var script = document.createElement("script");
+
+  for (var idx in section_ids) {
+    var section_id = section_ids[idx];
+
+    // Add script to end
+    script.innerHTML = `const ${section_id} = new MagicGrid({
+      container: "#${section_id}",
+      animate: false,
+      gutter: 30, // default gutter size
+      static: true,
+      useMin: false,
+      maxColumns: 2,
+      useTransform: true
+    });`;
+  }
+
+  // Script commands at bottom
+  script.innerHTML += `$("document").ready(() => {`;
+  for (var idx in section_ids) {
+    var section_id = section_ids[idx];
+    script.innerHTML += `${section_id}.listen();`;
+  }
+  script.innerHTML += `});`;
+
+  document.body.appendChild(script);
+}
+
 module.exports.updateCode = (username, opts) => {
-  const { includeFork, twitter, linkedin, medium, dribbble } = opts;
+  const { includeFork } = opts;
   //add data to assets/index.html
   jsdom
     .fromFile(`${__dirname}/assets/index.html`, options)
@@ -100,86 +242,12 @@ module.exports.updateCode = (username, opts) => {
           // Create scripts
           createScripts(document, section_ids);
 
-          const user = await getUser(username);
-          document.title = user.login;
-          var icon = document.createElement("link");
-          icon.setAttribute("rel", "icon");
-          icon.setAttribute("href", user.avatar_url);
-          icon.setAttribute("type", "image/png");
+          // Write common left side
+          await makeUserInfo(document, username, opts);
 
-          document.getElementsByTagName("head")[0].appendChild(icon);
-          document.getElementById(
-            "profile_img"
-          ).style.background = `url('${user.avatar_url}') center center`;
-          document.getElementById(
-            "username"
-          ).innerHTML = `<span style="display:${
-            user.name == null || !user.name ? "none" : "block"
-          };">${user.name}</span><a href="${user.html_url}">@${user.login}</a>`;
-          //document.getElementById("github_link").href = `https://github.com/${user.login}`;
-          document.getElementById("userbio").innerHTML = convertToEmoji(
-            user.bio
-          );
-          document.getElementById("userbio").style.display =
-            user.bio == null || !user.bio ? "none" : "block";
-          document.getElementById("about").innerHTML = `
-                <span style="display:${
-                  user.company == null || !user.company ? "none" : "block"
-                };"><i class="fas fa-users"></i> &nbsp; ${user.company}</span>
-                <span style="display:${
-                  user.email == null || !user.email ? "none" : "block"
-                };"><i class="fas fa-envelope"></i> &nbsp; ${user.email}</span>
-                <span style="display:${
-                  user.blog == null || !user.blog ? "none" : "block"
-                };"><i class="fas fa-link"></i> &nbsp; <a href="${user.blog}">${
-            user.blog
-          }</a></span>
-                <span style="display:${
-                  user.location == null || !user.location ? "none" : "block"
-                };"><i class="fas fa-map-marker-alt"></i> &nbsp;&nbsp; ${
-            user.location
-          }</span>
-                <span style="display:${
-                  user.hireable == false || !user.hireable ? "none" : "block"
-                };"><i class="fas fa-user-tie"></i> &nbsp;&nbsp; Available for hire</span>
-                <div class="socials">
-                <span style="display:${
-                  twitter == null ? "none !important" : "block"
-                };"><a href="https://www.twitter.com/${twitter}" target="_blank" class="socials"><i class="fab fa-twitter"></i></a></span>
-                <span style="display:${
-                  dribbble == null ? "none !important" : "block"
-                };"><a href="https://www.dribbble.com/${dribbble}" target="_blank" class="socials"><i class="fab fa-dribbble"></i></a></span>
-                <span style="display:${
-                  linkedin == null ? "none !important" : "block"
-                };"><a href="https://www.linkedin.com/in/${linkedin}/" target="_blank" class="socials"><i class="fab fa-linkedin-in"></i></a></span>
-                <span style="display:${
-                  medium == null ? "none !important" : "block"
-                };"><a href="https://www.medium.com/@${medium}/" target="_blank" class="socials"><i class="fab fa-medium-m"></i></a></span>
-                </div>
-                `;
-          //add data to config.json
-          const data = await getConfig();
-          data[0].username = user.login;
-          data[0].name = user.name;
-          data[0].userimg = user.avatar_url;
+          // Write
+          await writePage(window, "Code");
 
-          await fs.writeFile(
-            `${outDir}/config.json`,
-            JSON.stringify(data, null, " "),
-            function(err) {
-              if (err) throw err;
-              console.log("Config file updated.");
-            }
-          );
-
-          await fs.writeFile(
-            `${outDir}/Code.html`,
-            "<!DOCTYPE html>" + window.document.documentElement.outerHTML,
-            function(error) {
-              if (error) throw error;
-              console.log(`Build Complete, Files can be Found @ ${outDir}\n`);
-            }
-          );
         } catch (error) {
           console.log(error);
         }
@@ -189,71 +257,6 @@ module.exports.updateCode = (username, opts) => {
       console.log(error);
     });
 };
-
-function getOrCreateSection(document, section_id, with_name, section_name) {
-
-  element = document.getElementById(section_id);
-
-  // Create if needed
-  if (element == null) {
-    var element_display = document.getElementById("display");
-
-    // Div
-    var element_div = document.createElement("div");
-    // element_div.setAttribute("id","work");
-    element_display.insertBefore(element_div, element_display.firstChild);
-
-    // Header
-    if (with_name) {
-      var header = document.createElement("h1");
-      header.innerHTML = section_name;
-      element_div.appendChild(header);
-    }
-
-    // Create element
-    element = document.createElement("div");
-    element.setAttribute("class","projects");
-    element.setAttribute("id",section_id);
-    element_div.appendChild(element);
-
-    // Get
-    element = document.getElementById(section_id);
-  }
-
-  return element;
-}
-
-function createScripts(document, section_ids) {
-
-  section_ids = section_ids.filter( onlyUnique );
-
-  var script = document.createElement("script");
-
-  for (var idx in section_ids) {
-    var section_id = section_ids[idx];
-
-    // Add script to end
-    script.innerHTML = `const ${section_id} = new MagicGrid({
-      container: "#${section_id}",
-      animate: false,
-      gutter: 30, // default gutter size
-      static: true,
-      useMin: false,
-      maxColumns: 2,
-      useTransform: true
-    });`;
-  }
-
-  // Script commands at bottom
-  script.innerHTML += `$("document").ready(() => {`;
-  for (var idx in section_ids) {
-    var section_id = section_ids[idx];
-    script.innerHTML += `${section_id}.listen();`;
-  }
-  script.innerHTML += `});`;
-
-  document.body.appendChild(script);
-}
 
 module.exports.updateHomepage = (username, opts) => {
   const { includeFork, twitter, linkedin, medium, dribbble, pages } = opts;
@@ -299,87 +302,12 @@ module.exports.updateHomepage = (username, opts) => {
           // Create grid at bottom
           createScripts(document, section_ids);
 
-          const user = await getUser(username);
-          document.title = user.login;
-          var icon = document.createElement("link");
-          icon.setAttribute("rel", "icon");
-          icon.setAttribute("href", user.avatar_url);
-          icon.setAttribute("type", "image/png");
+          // Write common left side
+          await makeUserInfo(document, username, opts);
 
-          document.getElementsByTagName("head")[0].appendChild(icon);
-          document.getElementById(
-            "profile_img"
-          ).style.background = `url('${user.avatar_url}') center center`;
-          document.getElementById(
-            "username"
-          ).innerHTML = `<span style="display:${
-            user.name == null || !user.name ? "none" : "block"
-          };">${user.name}</span><a href="${user.html_url}">@${user.login}</a>`;
-          //document.getElementById("github_link").href = `https://github.com/${user.login}`;
-          document.getElementById("userbio").innerHTML = convertToEmoji(
-            user.bio
-          );
-          document.getElementById("userbio").style.display =
-            user.bio == null || !user.bio ? "none" : "block";
-          document.getElementById("about").innerHTML = `
-                <span style="display:${
-                  user.company == null || !user.company ? "none" : "block"
-                };"><i class="fas fa-users"></i> &nbsp; ${user.company}</span>
-                <span style="display:${
-                  user.email == null || !user.email ? "none" : "block"
-                };"><i class="fas fa-envelope"></i> &nbsp; ${user.email}</span>
-                <span style="display:${
-                  user.blog == null || !user.blog ? "none" : "block"
-                };"><i class="fas fa-link"></i> &nbsp; <a href="${user.blog}">${
-            user.blog
-          }</a></span>
-                <span style="display:${
-                  user.location == null || !user.location ? "none" : "block"
-                };"><i class="fas fa-map-marker-alt"></i> &nbsp;&nbsp; ${
-            user.location
-          }</span>
-                <span style="display:${
-                  user.hireable == false || !user.hireable ? "none" : "block"
-                };"><i class="fas fa-user-tie"></i> &nbsp;&nbsp; Available for hire</span>
-                <div class="socials">
-                <span style="display:${
-                  twitter == null ? "none !important" : "block"
-                };"><a href="https://www.twitter.com/${twitter}" target="_blank" class="socials"><i class="fab fa-twitter"></i></a></span>
-                <span style="display:${
-                  dribbble == null ? "none !important" : "block"
-                };"><a href="https://www.dribbble.com/${dribbble}" target="_blank" class="socials"><i class="fab fa-dribbble"></i></a></span>
-                <span style="display:${
-                  linkedin == null ? "none !important" : "block"
-                };"><a href="https://www.linkedin.com/in/${linkedin}/" target="_blank" class="socials"><i class="fab fa-linkedin-in"></i></a></span>
-                <span style="display:${
-                  medium == null ? "none !important" : "block"
-                };"><a href="https://www.medium.com/@${medium}/" target="_blank" class="socials"><i class="fab fa-medium-m"></i></a></span>
-                </div>
-                `;
-          //add data to config.json
-          const data = await getConfig();
-          data[0].username = user.login;
-          data[0].name = user.name;
-          data[0].userimg = user.avatar_url;
+          // Write
+          await writePage(window, "index");
 
-          console.log(`${outDir}/index.html`);
-
-          await fs.writeFile(
-            `${outDir}/config_home.json`,
-            JSON.stringify(data, null, " "),
-            function(err) {
-              if (err) throw err;
-              console.log("Config file updated.");
-            }
-          );
-          await fs.writeFileSync(
-            `${outDir}/index.html`,
-            "<!DOCTYPE html>" + window.document.documentElement.outerHTML,
-            function(error) {
-              if (error) throw error;
-              console.log(`Build Complete, Files can be Found @ ${outDir}\n`);
-            }
-          );
         } catch (error) {
           console.log(error);
         }

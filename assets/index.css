@@ -52,9 +52,21 @@ body {
 }
 
 #profile {
-  width: 100vw;
+  width: 24vw;
   padding: 4vh 3vw;
   height: 92vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  background: transparent;
+  position: fixed;
+  color: #fff !important;
+}
+
+#profile_background {
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -215,6 +227,7 @@ body {
   width: 100%;
   padding: 8vh 0px;
   text-align: center;
+  position: relative;
 }
 
 #footer a {
@@ -234,6 +247,7 @@ body {
   border-radius: 5px;
   background-size: cover !important;
   background-repeat: no-repeat !important;
+  cursor: pointer;
 }
 
 #profile div {
@@ -331,6 +345,7 @@ body {
   margin: 1vh 0px;
   padding: 0px 1px;
   word-wrap: break-word;
+  word-break: break-all;
 }
 
 .about_section {
@@ -339,6 +354,7 @@ body {
   margin: 2vh 0px;
   font-weight: bold;
   word-wrap: break-word;
+  word-break: break-all;
 }
 
 .bottom_section {
@@ -440,6 +456,35 @@ body {
     text-align: center;
     position: relative;
   }
+
+  #profile_background {
+    width: 100vw;
+    height: 60vh;
+    text-align: center;
+    position: absolute;
+  }
+
+  #loading {
+    width: 100vw;
+    height: 60vh;
+    position: fixed;
+  }  
+
+  #loading_black {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background: var(--bg-color);
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }  
 
   #display {
     width: 90vw;
