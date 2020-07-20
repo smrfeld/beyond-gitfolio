@@ -1,6 +1,6 @@
 const fs = require("fs");
 const express = require("express");
-const { populateCSS, populateHomepage, populateCode } = require("./populate");
+const { populateCSS, populateHomepage, populateCode, populatePages } = require("./populate");
 const { writeConfig, readConfigAsText } = require("./utils");
 const { getUser } = require("./api");
 
@@ -197,6 +197,9 @@ function uiCommand() {
     console.log("populateCode...");
     populateCode(username, user, opts);
     
+    console.log("populatePages...");
+    populatePages(user, opts);
+
     console.log("populateCSS...");
     populateCSS({
       background: background,

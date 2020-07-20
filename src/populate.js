@@ -116,7 +116,7 @@ async function writePage(window, page_name) {
   );
 }
 
-function getOrCreateSection(document, section_id, with_name, section_name) {
+function getOrCreateSection(document, section_id, section_name) {
 
   element = document.getElementById(section_id);
 
@@ -129,12 +129,10 @@ function getOrCreateSection(document, section_id, with_name, section_name) {
     // element_div.setAttribute("id","work");
 
     // Header
-    if (with_name == true) {
-      var header = document.createElement("h1");
-      header.setAttribute("style","position: relative");
-      header.innerHTML = section_name;
-      element_div.appendChild(header);
-    }
+    var header = document.createElement("h1");
+    header.setAttribute("style","position: relative");
+    header.innerHTML = section_name;
+    element_div.appendChild(header);
 
     // Create element
     element = document.createElement("div");
@@ -235,7 +233,7 @@ function populateCode(username, user, opts) {
         document = window.document;
       (async () => {
         try {
-          console.log("Building HTML/CSS...");
+          console.log("Building Code...");
           const repos = await getRepos(username, opts);
 
           // Create content
@@ -245,10 +243,10 @@ function populateCode(username, user, opts) {
             // Get section
             let element;
             if (repos[i].fork == false) {
-              element = getOrCreateSection(document, "work_section", true, "Work.");
+              element = getOrCreateSection(document, "work_section", "Work.");
               section_ids.push("work_section");
             } else if (includeFork == true) {
-              element = getOrCreateSection(document, "fork_section", true, "Forks.");
+              element = getOrCreateSection(document, "fork_section", "Forks.");
               section_ids.push("fork_section");
             } else {
               continue;
@@ -317,7 +315,7 @@ function populateHomepage(user, opts) {
           // Iterate over pages
           console.log(pages);
           var section_ids = [];
-          let element = getOrCreateSection(document, "pages", true, "<br />");
+          let element = getOrCreateSection(document, "pages", "<br />");
           section_ids.push("pages");
 
           for (var page_idx in pages) {
@@ -362,8 +360,85 @@ function populateHomepage(user, opts) {
     });
 };
 
+async function populatePages(user, opts) {
+  const { pages } = opts;
+  //add data to assets/index.html
+
+  // Go through all pages
+  for (var page_idx in pages) {
+    var page = pages[page_idx];
+
+    // Make the page if it is not external
+    if (page["is_external"]) {
+      console.log("Skipping building page: ",page["name"]," because it is external.");
+      continue;
+    }
+
+    // Make the page if it is not the code page
+    if (page["name"] === "Code") {
+      console.log("Skipping building page: ",page["name"]," because it is built separately.");
+      continue;
+    }
+
+    console.log(`Preparing to build fancy page: ${page["name"]}...`);
+
+    await jsdom
+    .fromFile(assetDir+`/index.html`, options)
+    .then(function(dom) {
+      let window = dom.window,
+        document = window.document;
+        
+      let buildPage = (async () => {
+        try {
+          console.log(`Building fancy page: ${page["name"]}...`);
+
+          // Make section
+          var section_ids = [];
+          let element = getOrCreateSection(document, page["ID"], page["name"]);
+          section_ids.push(page["ID"]);
+
+          // Iterate over entries
+          for (var entry_idx in page["entries"]) {
+            var entry = page["entries"][entry_idx];
+            console.log("Adding to page: ", page["name"], " entry: ", entry["name"]);
+
+            element.innerHTML += `
+            <a href="${entry["url"]}">
+            <section>
+                <div class="section_title">${entry["name"]}</div>
+                <div class="about_section">
+                </div>
+                <div class="bottom_section">
+                </div>
+            </section>
+            </a>`;
+          }
+
+          // Create grid at bottom
+          createScripts(document, section_ids);
+
+          // Write common left side
+          await makeUserInfo(document, user, opts);
+
+          // Write
+          await writePage(window, page["name"]);
+
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
+      buildPage();
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  } 
+};
+
 module.exports = {
   populateCSS,
   populateCode,
-  populateHomepage
+  populateHomepage,
+  populatePages
 };
