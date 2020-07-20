@@ -18,7 +18,8 @@ function collect(val, memo) {
 program
   .command("build <username>")
   .description(
-    "Build site with your GitHub username. This will be used to customize your site"
+    "WARNING: This has not been updated for beyond-gitfolio. For now, recommended to use beyond-gitfolio ui. \n \
+    Build site with your GitHub username. This will be used to customize your site."
   )
   .option("-t, --theme [theme]", "specify a theme to use", "light")
   .option("-b, --background [background]", "set the background image")
@@ -33,7 +34,9 @@ program
 
 program
   .command("update")
-  .description("Update user and repository data")
+  .description(
+    "WARNING: This has not been updated for beyond-gitfolio. For now, recommended to use beyond-gitfolio ui. \n \
+    Update user and repository data")
   .action(updateCommand);
 
 program
@@ -43,7 +46,9 @@ program
 
 program
   .command("run")
-  .description("Run build files")
+  .description(
+    "WARNING: This has not been updated for beyond-gitfolio. For now, recommended to use beyond-gitfolio ui. \n \
+    Run build files")
   .option("-p, --port [port]", "provide a port for localhost, default is 3000")
   .action(runCommand);
 

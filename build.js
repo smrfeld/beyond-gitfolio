@@ -65,7 +65,6 @@ async function populateConfig(opts) {
 }
 
 async function buildCommand(username, program) {
-  console.log("hello");
 
   await populateCSS(program);
   let types;

@@ -21,7 +21,7 @@
       href="https://cdn.jsdelivr.net/gh/zeva-ui/zeva/dist/css/zeva.min.css"
     />
   </head>
-  <body class="body-light" onload="addPageWithName('Papers',true,false,false); addPageWithName('Code',false,true,false);">
+  <body class="body-light" onload="loadConfig(); addPageWithName('Papers',true,false,false); addPageWithName('Code',false,true,false);">
     <header>
       <b>beyond-gitfolio</b>
       <a href="/blog" style="float: right">New Blog </a>
@@ -172,6 +172,44 @@
     </script>
 
     <script type="text/javascript">
+
+      function loadConfig() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+
+            // Got the JSON
+            console.log(this.responseText);
+
+            // Decode JSON
+            var opts = JSON.parse(this.responseText);
+            
+            // Keys and ids
+            var pairs = {
+              "username": "username",
+              "background": "background",
+              "theme": "theme",
+              "fork": "fork",
+              "socials": "socials",
+              "twitter": "twitter",
+              "linkedin": "linkedin",
+              "medium": "medium",
+              "dribbble": "dribbble"
+            };
+
+            // Go through and set the pairs
+            for (var key in pairs) {
+              var element = document.getElementById(key);
+              var val = opts[0][pairs[key]];
+              if ((element !== null) && (val !== undefined)) {
+                element.value = val;
+              }
+            }
+          }
+        };
+        xhttp.open("GET", "config.json", true);
+        xhttp.send();
+      }
 
       // Pages
       var pages = [];

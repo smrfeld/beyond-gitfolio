@@ -11,14 +11,13 @@ async function updateCommand() {
     return;
   }
   const opts = {
-    sort: data[0].sort,
-    order: data[0].order,
     includeFork: data[0].includeFork,
     types: data[0].types,
     twitter: data[0].twitter,
     linkedin: data[0].linkedin,
     medium: data[0].medium,
-    dribbble: data[0].dribbble
+    dribbble: data[0].dribbble,
+    pages: data[0].pages
   };
   updateHTML(username, opts);
 }
