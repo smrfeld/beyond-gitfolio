@@ -8,6 +8,17 @@ The goals of this project are to extend `Gitfolio` to:
 3. Add a dedicated `papers` page to display academic papers.
 4. Update the `gitfolio ui` so that papers can be added dynamically to the page.
 5. Small stylistic changes, e.g. change the background to full page image.
+6. Automatically read in `json` configuration from the previous run. Alternatively, you can edit the `json` file manually with your papers and other pages and `gitfolio ui` will parse and display it.
+
+## Examples
+
+An example page generated is given below.
+
+<img src="example.png" alt="drawing" width="600"/>
+
+The user interface has been modified from `gitfolio` and can be used to add papers/links and new pages. An example screenshot is below.
+
+<img src="ui.png" alt="drawing" width="600"/>
 
 ## Running beyond-gitfolio
 
@@ -37,4 +48,4 @@ beyond-gitfolio ui
 
 1. Blog is not tested and probably broken.
 2. Ability to reorganize sections.
-3. Ability to choose one or two column layouts.
+3. Ability to choose one or two column layouts for links.
