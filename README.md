@@ -12,7 +12,7 @@ The goals of this project are to extend `Gitfolio` to:
 
 ## Examples
 
-An example page generated is given below, and can be found [here](oliver-ernst.com).
+An example page generated is given below, and can be found [here](https://www.oliver-ernst.com).
 
 <img src="example.png" alt="drawing" width="600"/>
 
